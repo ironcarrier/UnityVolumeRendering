@@ -1026,9 +1026,8 @@ MonoBehaviour:
   m_UseOptimizedControls: 1
   m_LeftHandMesh: {fileID: 203025149}
   m_RightHandMesh: {fileID: 1061459720}
-  m_HandMeshMaterial: {fileID: -876546973899608171, guid: bd11349dc99f3fd4083ef2f86cee9c1f,
-    type: 3}
-  m_DrawMeshes: 0
+  m_HandMeshMaterial: {fileID: 2100000, guid: 613690cd962241049a0ec289a6ff835e, type: 2}
+  m_DrawMeshes: 1
   m_DebugDrawPrefab: {fileID: 6507399986997092475, guid: 254b742d65a15d14b9df756ae77de868,
     type: 3}
   m_DebugDrawJoints: 0
@@ -2438,10 +2437,10 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1525248693}
-  - {fileID: 838046404}
-  - {fileID: 1938846596}
   - {fileID: 408377755}
   - {fileID: 1121699605}
+  - {fileID: 838046404}
+  - {fileID: 1938846596}
   m_Father: {fileID: 1021301875}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1875947173
@@ -2505,7 +2504,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: 708783ad3b94ffb49b534b999f3d331e, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2560,7 +2559,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1938846596}
   m_Layer: 0
-  m_Name: RightHnad
+  m_Name: RightHand
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
