@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
 
 namespace UnityVolumeRendering
 {
@@ -45,6 +46,8 @@ namespace UnityVolumeRendering
             meshContainer.transform.parent = outerObject.transform;
             outerObject.transform.localRotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
 
+            outerObject.transform.position = new Vector3(outerObject.transform.position.x, 1f, outerObject.transform.position.z);
+
             meshRenderer.sharedMaterial = new Material(meshRenderer.sharedMaterial);
             volObj.meshRenderer = meshRenderer;
             volObj.dataset = dataset;
@@ -73,6 +76,32 @@ namespace UnityVolumeRendering
 
             if (PlayerPrefs.GetInt("NormaliseScaleOnImport") > 0)
                 volObj.NormaliseScale();
+
+            SetupXRInteraction(outerObject, meshContainer);
+        }
+
+        private static void SetupXRInteraction(GameObject outerObject, GameObject meshContainer)
+        {
+            // Add rigidbody for physics interaction
+            Rigidbody rb = outerObject.AddComponent<Rigidbody>();
+            rb.isKinematic = true;
+            rb.useGravity = false;
+
+            // Add box collider to the outer object
+            BoxCollider collider = outerObject.AddComponent<BoxCollider>();
+            collider.isTrigger = false;
+            
+            // Size the collider to match the mesh container
+            Renderer meshRenderer = meshContainer.GetComponent<Renderer>();
+            if (meshRenderer != null)
+            {
+                collider.center = meshRenderer.bounds.center - outerObject.transform.position;
+                collider.size = meshRenderer.bounds.size;
+            }
+
+            // Add and configure XR Grab Interactable
+            XRGrabInteractable grabInteractable = outerObject.AddComponent<XRGrabInteractable>();
+            VolumeInteractionSettings.SetupInteractable(grabInteractable);
         }
 
         public static void SpawnCrossSectionPlane(VolumeRenderedObject volobj)

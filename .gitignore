@@ -62,3 +62,7 @@ Logs/shadercompiler-UnityShaderCompiler.exe1.log
 Logs/shadercompiler-UnityShaderCompiler.exe0.log
 *.asset
 *.log
+Logs/shadercompiler-UnityShaderCompiler.exe0.log
+Logs/shadercompiler-UnityShaderCompiler.exe1.log
+Logs/shadercompiler-UnityShaderCompiler.exe2.log
+*.log
