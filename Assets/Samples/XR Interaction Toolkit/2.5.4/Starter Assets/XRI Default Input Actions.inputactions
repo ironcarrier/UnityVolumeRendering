@@ -1577,6 +1577,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
+                },
+                {
+                    "name": "Toggle Plane",
+                    "type": "Button",
+                    "id": "c5196651-5737-449c-a864-7138ba5b4c99",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -1742,6 +1751,17 @@
                     "processors": "ScaleVector2(x=0),StickDeadzone",
                     "groups": "Generic XR Controller",
                     "action": "Scale Delta",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "41001f0c-e4d6-4911-9a94-a351f4a881e5",
+                    "path": "<XRInputV1::Oculus::OculusTouchControllerOpenXR>{RightHand}/secondarybutton",
+                    "interactions": "Press(behavior=2)",
+                    "processors": "",
+                    "groups": "Generic XR Controller",
+                    "action": "Toggle Plane",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
