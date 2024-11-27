@@ -11,15 +11,44 @@ public class ControllerSlicingPlane : MonoBehaviour
     [SerializeField]
     private InputActionReference togglePlaneAction;
 
+    [SerializeField]
+    private InputActionReference saveCutAction;  // A button
+    
+    [SerializeField]
+    private InputActionReference undoCutAction;  // Left hand A button
+    
     private bool isPlaneActive = true;
     private bool wasPressed = false;
-
+    
+    private CutHistory cutHistory;
+    
     private void Start()
     {
         if (togglePlaneAction != null)
         {
             togglePlaneAction.action.started += OnTogglePlane;
             togglePlaneAction.action.Enable();
+        }
+        
+        if (saveCutAction != null)
+        {
+            saveCutAction.action.started += OnSaveCut;
+            saveCutAction.action.Enable();
+        }
+        
+        if (undoCutAction != null)
+        {
+            undoCutAction.action.started += OnUndoCut;
+            undoCutAction.action.Enable();
+        }
+
+        // Move cutHistory initialization to when we actually have a volume
+        VolumeRenderedObject foundVolume = FindObjectOfType<VolumeRenderedObject>();
+        if (foundVolume != null)
+        {
+            currentVolume = foundVolume;
+            cutHistory = currentVolume.gameObject.AddComponent<CutHistory>();
+            CreateCrossSectionPlane();
         }
     }
 
@@ -29,6 +58,18 @@ public class ControllerSlicingPlane : MonoBehaviour
         {
             togglePlaneAction.action.started -= OnTogglePlane;
             togglePlaneAction.action.Disable();
+        }
+        
+        if (saveCutAction != null)
+        {
+            saveCutAction.action.started -= OnSaveCut;
+            saveCutAction.action.Disable();
+        }
+        
+        if (undoCutAction != null)
+        {
+            undoCutAction.action.started -= OnUndoCut;
+            undoCutAction.action.Disable();
         }
     }
 
@@ -103,6 +144,82 @@ public class ControllerSlicingPlane : MonoBehaviour
         {
             currentVolume = volume;
             CreateCrossSectionPlane();
+        }
+    }
+
+    private void OnSaveCut(InputAction.CallbackContext context)
+    {
+        if (crossSectionPlane != null && crossSectionPlane.gameObject.activeSelf && currentVolume != null)
+        {
+            // Ensure cutHistory exists
+            if (cutHistory == null)
+            {
+                cutHistory = currentVolume.GetComponent<CutHistory>();
+                if (cutHistory == null)
+                {
+                    cutHistory = currentVolume.gameObject.AddComponent<CutHistory>();
+                }
+            }
+
+            // Check if we've reached the maximum number of cuts
+            if (cutHistory.GetActiveCuts().Length >= 8)
+            {
+                Debug.LogWarning("Maximum number of cuts reached (8). Remove some cuts to add more.");
+                return;
+            }
+
+            // Create a permanent copy at the exact same position
+            GameObject permanentPlane = Instantiate(crossSectionPlane.gameObject, 
+                crossSectionPlane.transform.position, 
+                crossSectionPlane.transform.rotation);
+            
+            // Set up the permanent plane
+            CrossSectionPlane permanentCut = permanentPlane.GetComponent<CrossSectionPlane>();
+            permanentCut.SetTargetObject(currentVolume);
+            permanentPlane.transform.parent = currentVolume.transform;
+            
+            // Save the cut state
+            CutState newCut = new CutState(
+                permanentPlane.transform.localToWorldMatrix,
+                permanentPlane.transform.position,
+                permanentPlane.transform.rotation
+            );
+            cutHistory.AddCut(newCut);
+            
+            // Hide the visual plane and disable collider
+            MeshRenderer renderer = permanentPlane.GetComponent<MeshRenderer>();
+            if (renderer != null)
+                renderer.enabled = false;
+            
+            Collider collider = permanentPlane.GetComponent<Collider>();
+            if (collider != null)
+                collider.enabled = false;
+            
+            // Add to permanent cuts
+            currentVolume.GetCrossSectionManager().AddPermanentCut(permanentCut);
+        }
+    }
+    
+    private void OnUndoCut(InputAction.CallbackContext context)
+    {
+        if (cutHistory != null && currentVolume != null)
+        {
+            if (cutHistory.UndoLastCut())
+            {
+                // Get all permanent cut planes
+                CrossSectionPlane[] planes = currentVolume.GetComponentsInChildren<CrossSectionPlane>();
+                
+                // Remove the last permanent cut plane if there are any
+                if (planes.Length > 0)  // > 0 because we want to keep the active cutting plane
+                {
+                    CrossSectionPlane lastPlane = planes[planes.Length - 1];
+                    if (lastPlane != crossSectionPlane)  // Make sure we don't destroy the active cutting plane
+                    {
+                        currentVolume.GetCrossSectionManager().RemoveLastPermanentCut();
+                        Destroy(lastPlane.gameObject);
+                    }
+                }
+            }
         }
     }
 }
