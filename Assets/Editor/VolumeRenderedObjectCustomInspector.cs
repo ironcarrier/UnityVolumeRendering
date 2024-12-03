@@ -252,6 +252,40 @@ namespace UnityVolumeRendering
                 volrendObj.SetCubicInterpolationEnabled(GUILayout.Toggle(volrendObj.GetCubicInterpolationEnabled(), "Enable cubic interpolation (better quality)"));
                 volrendObj.SetSamplingRateMultiplier(EditorGUILayout.Slider("Sampling rate multiplier", volrendObj.GetSamplingRateMultiplier(), 0.2f, 2.0f));
             }
+
+            if (volrendObj.dataset != null)
+            {
+                // Visibility window (normalized)
+                EditorGUILayout.LabelField("Visibility Window");
+                Vector2 currentVisWindow = volrendObj.GetVisibilityWindow();
+                EditorGUILayout.MinMaxSlider(ref currentVisWindow.x, ref currentVisWindow.y, 0.0f, 1.0f);
+                
+                // Add Hounsfield unit display
+                float minHU = Mathf.Lerp(volrendObj.dataset.GetMinDataValue(), 
+                                       volrendObj.dataset.GetMaxDataValue(), 
+                                       currentVisWindow.x);
+                float maxHU = Mathf.Lerp(volrendObj.dataset.GetMinDataValue(), 
+                                       volrendObj.dataset.GetMaxDataValue(), 
+                                       currentVisWindow.y);
+                
+                EditorGUILayout.LabelField($"Hounsfield Range: {minHU:F0}HU to {maxHU:F0}HU");
+                
+                EditorGUI.BeginChangeCheck();
+                Vector2 newHUWindow = EditorGUILayout.Vector2Field("Set Hounsfield Range", new Vector2(minHU, maxHU));
+                if (EditorGUI.EndChangeCheck())
+                {
+                    float newMinNorm = Mathf.InverseLerp(volrendObj.dataset.GetMinDataValue(),
+                                                        volrendObj.dataset.GetMaxDataValue(),
+                                                        newHUWindow.x);
+                    float newMaxNorm = Mathf.InverseLerp(volrendObj.dataset.GetMinDataValue(),
+                                                        volrendObj.dataset.GetMaxDataValue(),
+                                                        newHUWindow.y);
+                    volrendObj.SetVisibilityWindow(new Vector2(newMinNorm, newMaxNorm));
+                }
+
+                if (GUI.changed)
+                    volrendObj.SetVisibilityWindow(currentVisWindow);
+            }
         }
         private static async void ImportImageFileDataset(VolumeRenderedObject targetObject, UnityAction<VolumeDataset> onLoad)
         {

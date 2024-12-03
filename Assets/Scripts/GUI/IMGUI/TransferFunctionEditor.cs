@@ -188,32 +188,70 @@ namespace UnityVolumeRendering
                 tf.colourControlPoints[movingColPointIndex] = colPoint;
             }
 
-            // Draw colour control points
-            for (int iCol = 0; iCol < tf.colourControlPoints.Count; iCol++)
+            // Draw the colour control points
+            foreach (TFColourControlPoint colPoint in transferFunction.colourControlPoints)
             {
-                TFColourControlPoint colPoint = tf.colourControlPoints[iCol];
-                Vector2 colourPointPos = ApplyZoomInverse(new Vector2(colPoint.dataValue, 0.0f));
-                if (colourPointPos.x < 0.0f || colourPointPos.x > 1.0f)
-                    continue;
-                Rect ctrlBox = new Rect(histRect.x + histRect.width * colourPointPos.x, histRect.y + histRect.height + 20, COLOUR_POINT_WIDTH, COLOUR_PALETTE_HEIGHT);
-                GUI.color = Color.red;
-                GUI.skin.box.fontSize = 6;
-                GUI.Box(ctrlBox, "*");
+                float xPos = rect.x + colPoint.dataValue * rect.width;
+                float yPos = rect.y + rect.height - COLOUR_PALETTE_HEIGHT;
+
+                // Draw the point
+                Color pointColor = colPoint.colourValue;
+                pointColor.a = 1.0f;
+                GUI.color = pointColor;
+                
+                Rect colorPointRect = new Rect(xPos - COLOUR_POINT_WIDTH * 0.5f, yPos - COLOUR_POINT_WIDTH * 0.5f, COLOUR_POINT_WIDTH, COLOUR_POINT_WIDTH);
+                GUI.Box(colorPointRect, "");
+
+                // Draw Hounsfield value
+                if (dataset != null)
+                {
+                    float hounsfieldValue = Mathf.Lerp(dataset.GetMinDataValue(), dataset.GetMaxDataValue(), colPoint.dataValue);
+                    GUI.color = Color.white;
+                    string label = $"{hounsfieldValue:F0}HU";
+                    Vector2 labelSize = GUI.skin.label.CalcSize(new GUIContent(label));
+                    Rect labelRect = new Rect(xPos - labelSize.x * 0.5f, yPos + COLOUR_POINT_WIDTH, labelSize.x, labelSize.y);
+                    GUI.Label(labelRect, label);
+                }
             }
 
-            // Draw alpha control points
-            for (int iAlpha = 0; iAlpha < tf.alphaControlPoints.Count; iAlpha++)
+            // Draw the alpha control points
+            foreach (TFAlphaControlPoint alphaPoint in transferFunction.alphaControlPoints)
             {
-                const int pointSize = 10;
-                TFAlphaControlPoint alphaPoint = tf.alphaControlPoints[iAlpha];
-                Vector2 alphaPointPos = ApplyZoomInverse(new Vector2(alphaPoint.dataValue, alphaPoint.alphaValue));
-                if (alphaPointPos.x < 0.0f || alphaPointPos.x > 1.0f || alphaPointPos.y < 0.0f || alphaPointPos.y > 1.0f)
-                    continue;
-                Rect ctrlBox = new Rect(histRect.x + histRect.width * alphaPointPos.x - pointSize / 2, histRect.y + (1.0f - alphaPointPos.y) * histRect.height - pointSize / 2, pointSize, pointSize);
-                GUI.color = Color.red;
-                GUI.skin.box.fontSize = 6;
-                GUI.Box(ctrlBox, "*");
-                GUI.color = oldColour;
+                float xPos = rect.x + alphaPoint.dataValue * rect.width;
+                float yPos = rect.y + (1.0f - alphaPoint.alphaValue) * (rect.height - COLOUR_PALETTE_HEIGHT);
+
+                // Draw the alpha point
+                GUI.color = Color.grey;
+                Rect alphaPointRect = new Rect(xPos - COLOUR_POINT_WIDTH * 0.5f, yPos - COLOUR_POINT_WIDTH * 0.5f, COLOUR_POINT_WIDTH, COLOUR_POINT_WIDTH);
+                GUI.Box(alphaPointRect, "");
+
+                // Draw Hounsfield value
+                if (dataset != null)
+                {
+                    float hounsfieldValue = Mathf.Lerp(dataset.GetMinDataValue(), dataset.GetMaxDataValue(), alphaPoint.dataValue);
+                    GUI.color = Color.white;
+                    string label = $"{hounsfieldValue:F0}HU";
+                    Vector2 labelSize = GUI.skin.label.CalcSize(new GUIContent(label));
+                    Rect labelRect = new Rect(xPos - labelSize.x * 0.5f, yPos - COLOUR_POINT_WIDTH - labelSize.y, labelSize.x, labelSize.y);
+                    GUI.Label(labelRect, label);
+                }
+            }
+
+            // When adding new points with right-click, show Hounsfield preview
+            if (rightMouseBtnDown && dataset != null)
+            {
+                float mouseXNormalized = (Event.current.mousePosition.x - rect.x) / rect.width;
+                if (mouseXNormalized >= 0.0f && mouseXNormalized <= 1.0f)
+                {
+                    float hounsfieldValue = Mathf.Lerp(dataset.GetMinDataValue(), dataset.GetMaxDataValue(), mouseXNormalized);
+                    GUI.color = Color.white;
+                    string label = $"{hounsfieldValue:F0}HU";
+                    Vector2 labelSize = GUI.skin.label.CalcSize(new GUIContent(label));
+                    Rect labelRect = new Rect(Event.current.mousePosition.x - labelSize.x * 0.5f, 
+                                            Event.current.mousePosition.y - labelSize.y - 5f,
+                                            labelSize.x, labelSize.y);
+                    GUI.Label(labelRect, label);
+                }
             }
 
             if (currentEvent.type == EventType.MouseUp)
@@ -373,6 +411,18 @@ namespace UnityVolumeRendering
         private float InverseLerpUnclamped(float start, float end, float value)
         {
             return (value - start) / (end - start);
+        }
+
+        private float NormalizedToHounsfield(float normalizedValue)
+        {
+            if (dataset == null) return normalizedValue;
+            return Mathf.Lerp(dataset.GetMinDataValue(), dataset.GetMaxDataValue(), normalizedValue);
+        }
+
+        private float HounsfieldToNormalized(float hounsfieldValue)
+        {
+            if (dataset == null) return hounsfieldValue;
+            return Mathf.InverseLerp(dataset.GetMinDataValue(), dataset.GetMaxDataValue(), hounsfieldValue);
         }
     }
 }
