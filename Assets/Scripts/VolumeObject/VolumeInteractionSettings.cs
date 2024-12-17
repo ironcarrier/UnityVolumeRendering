@@ -7,23 +7,19 @@ namespace UnityVolumeRendering
     {
         public static void SetupInteractable(XRGrabInteractable grabInteractable)
         {
-            // Configure for kinematic interaction
-            grabInteractable.movementType = XRBaseInteractable.MovementType.Kinematic;
+            // Configure for instantaneous movement
+            grabInteractable.movementType = XRBaseInteractable.MovementType.Instantaneous;
             grabInteractable.trackPosition = true;
             grabInteractable.trackRotation = true;
             grabInteractable.throwOnDetach = false;
-            grabInteractable.retainTransformParent = true;
+            grabInteractable.retainTransformParent = false;
             
-            // Smooth movement settings
-            grabInteractable.smoothPosition = true;
-            grabInteractable.smoothPositionAmount = 5f;
-            grabInteractable.tightenPosition = 0.5f;
-            grabInteractable.smoothRotation = true;
-            grabInteractable.smoothRotationAmount = 5f;
-            grabInteractable.tightenRotation = 0.5f;
+            // Disable smoothing for more stable movement
+            grabInteractable.smoothPosition = false;
+            grabInteractable.smoothRotation = false;
             
-            // Attach transform settings
-            grabInteractable.attachEaseInTime = 0.15f;
+            // Quick attach settings
+            grabInteractable.attachEaseInTime = 0f;
             grabInteractable.matchAttachPosition = true;
             grabInteractable.matchAttachRotation = true;
         }
