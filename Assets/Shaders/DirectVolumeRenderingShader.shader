@@ -24,8 +24,8 @@
         LOD 100
         Cull Front
         ZTest LEqual
-        ZWrite On
-        Blend SrcAlpha OneMinusSrcAlpha
+        ZWrite Off
+        Blend One OneMinusSrcAlpha
 
         Pass
         {
@@ -297,7 +297,9 @@
             // Direct Volume Rendering
             frag_out frag_dvr(frag_in i)
             {
+                #ifndef MAX_NUM_STEPS
                 #define MAX_NUM_STEPS 512
+                #endif
                 #define OPACITY_THRESHOLD (1.0 - 1.0 / 255.0)
                 const int samplingRate = (int)(MAX_NUM_STEPS * _SamplingRateMultiplier);
 
@@ -344,11 +346,19 @@
 #if defined(MULTIVOLUME_OVERLAY) || defined(MULTIVOLUME_ISOLATE)
                     const float secondaryDensity = getSecondaryDensity(currPos);
                     float4 secondaryColour = getSecondaryTF1DColour(secondaryDensity);
-#if MULTIVOLUME_OVERLAY
+                    float4 src = float4(0,0,0,0);
+                    
+                    #if !TF2D_ON
+                    src = getTF1DColour(density);
+                    #else
+                    src = getTF2DColour(density, gradMagNorm);
+                    #endif
+
+                    #if MULTIVOLUME_OVERLAY
                     src = secondaryColour.a > 0.0 ? secondaryColour : src;
-#elif MULTIVOLUME_ISOLATE
+                    #elif MULTIVOLUME_ISOLATE
                     src.a = secondaryColour.a > 0.0 ? src.a : 0.0;
-#endif
+                    #endif
 #endif
 
                     // Calculate gradient (needed for lighting and 2D transfer functions)
@@ -408,7 +418,9 @@
             // Maximum Intensity Projection mode
             frag_out frag_mip(frag_in i)
             {
+                #ifndef MAX_NUM_STEPS
                 #define MAX_NUM_STEPS 512
+                #endif
                 const int samplingRate = (int)(MAX_NUM_STEPS * _SamplingRateMultiplier);
 
                 RayInfo ray = getRayBack2Front(i.vertexLocal);
@@ -447,7 +459,9 @@
             // Draws the first point (closest to camera) with a density within the user-defined thresholds.
             frag_out frag_surf(frag_in i)
             {
-                #define MAX_NUM_STEPS 1024
+                #ifndef MAX_NUM_STEPS
+                #define MAX_NUM_STEPS 512
+                #endif
                 const int samplingRate = (int)(MAX_NUM_STEPS * _SamplingRateMultiplier);
 
                 RayInfo ray = getRayFront2Back(i.vertexLocal);
