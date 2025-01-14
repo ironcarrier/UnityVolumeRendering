@@ -205,7 +205,7 @@ namespace UnityVolumeRendering
                 // Draw Hounsfield value
                 if (dataset != null)
                 {
-                    float hounsfieldValue = Mathf.Lerp(dataset.GetMinDataValue(), dataset.GetMaxDataValue(), colPoint.dataValue);
+                    float hounsfieldValue = NormalizedToHounsfield(colPoint.dataValue);
                     GUI.color = Color.white;
                     string label = $"{hounsfieldValue:F0}HU";
                     Vector2 labelSize = GUI.skin.label.CalcSize(new GUIContent(label));
@@ -228,7 +228,7 @@ namespace UnityVolumeRendering
                 // Draw Hounsfield value
                 if (dataset != null)
                 {
-                    float hounsfieldValue = Mathf.Lerp(dataset.GetMinDataValue(), dataset.GetMaxDataValue(), alphaPoint.dataValue);
+                    float hounsfieldValue = NormalizedToHounsfield(alphaPoint.dataValue);
                     GUI.color = Color.white;
                     string label = $"{hounsfieldValue:F0}HU";
                     Vector2 labelSize = GUI.skin.label.CalcSize(new GUIContent(label));
@@ -243,7 +243,7 @@ namespace UnityVolumeRendering
                 float mouseXNormalized = (Event.current.mousePosition.x - rect.x) / rect.width;
                 if (mouseXNormalized >= 0.0f && mouseXNormalized <= 1.0f)
                 {
-                    float hounsfieldValue = Mathf.Lerp(dataset.GetMinDataValue(), dataset.GetMaxDataValue(), mouseXNormalized);
+                    float hounsfieldValue = NormalizedToHounsfield(mouseXNormalized);
                     GUI.color = Color.white;
                     string label = $"{hounsfieldValue:F0}HU";
                     Vector2 labelSize = GUI.skin.label.CalcSize(new GUIContent(label));
@@ -415,14 +415,12 @@ namespace UnityVolumeRendering
 
         private float NormalizedToHounsfield(float normalizedValue)
         {
-            if (dataset == null) return normalizedValue;
-            return Mathf.Lerp(dataset.GetMinDataValue(), dataset.GetMaxDataValue(), normalizedValue);
+            return HounsfieldUnit.FromNormalized(normalizedValue);
         }
 
         private float HounsfieldToNormalized(float hounsfieldValue)
         {
-            if (dataset == null) return hounsfieldValue;
-            return Mathf.InverseLerp(dataset.GetMinDataValue(), dataset.GetMaxDataValue(), hounsfieldValue);
+            return HounsfieldUnit.ToNormalized(hounsfieldValue);
         }
     }
 }

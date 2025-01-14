@@ -28,6 +28,20 @@ namespace UnityVolumeRendering
             alphaControlPoints.Add(ctrlPoint);
         }
 
+        public void AddHUPoint(float hounsfieldValue, Color color)
+        {
+            float normalizedValue = (hounsfieldValue + 1024f) / (3071f + 1024f);
+            normalizedValue = Mathf.Clamp01(normalizedValue);
+            colourControlPoints.Add(new TFColourControlPoint(normalizedValue, color));
+        }
+
+        public void AddHUAlphaPoint(float hounsfieldValue, float alpha)
+        {
+            float normalizedValue = (hounsfieldValue + 1024f) / (3071f + 1024f);
+            normalizedValue = Mathf.Clamp01(normalizedValue);
+            alphaControlPoints.Add(new TFAlphaControlPoint(normalizedValue, alpha));
+        }
+
         public Texture2D GetTexture()
         {
             if (texture == null)
