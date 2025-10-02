@@ -22,8 +22,10 @@ namespace UnityVolumeRendering
         private int handleMain;
         private int currentDispatchIndex = 0;
         private float cooldown = 1.0f;
+#pragma warning disable 0414 // Field assigned but never used (used in UNITY_EDITOR)
         private double lastUpdateTimeEditor = 0.0f;
         private bool isDirty = true;
+#pragma warning restore 0414
 
         private void Awake()
         {

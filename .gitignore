@@ -66,6 +66,10 @@ Logs/shadercompiler-UnityShaderCompiler.exe0.log
 Logs/shadercompiler-UnityShaderCompiler.exe1.log
 Logs/shadercompiler-UnityShaderCompiler.exe2.log
 *.log
+
+# SimpleITK binaries (large native libraries, downloaded on-demand)
+Assets/3rdparty/SimpleITK/
+Assets/3rdparty/SimpleITK.meta
 Logs/shadercompiler-UnityShaderCompiler.exe0.log
 Logs/shadercompiler-UnityShaderCompiler.exe1.log
 Logs/shadercompiler-UnityShaderCompiler.exe2.log

@@ -336,31 +336,6 @@
                     // Apply visibility window
                     if (density < _MinVal || density > _MaxVal) continue;
 
-                    // Apply 1D transfer function
-#if !TF2D_ON
-                    float4 src = getTF1DColour(density);
-                    if (src.a == 0.0)
-                        continue;
-#endif
-
-#if defined(MULTIVOLUME_OVERLAY) || defined(MULTIVOLUME_ISOLATE)
-                    const float secondaryDensity = getSecondaryDensity(currPos);
-                    float4 secondaryColour = getSecondaryTF1DColour(secondaryDensity);
-                    float4 src = float4(0,0,0,0);
-                    
-                    #if !TF2D_ON
-                    src = getTF1DColour(density);
-                    #else
-                    src = getTF2DColour(density, gradMagNorm);
-                    #endif
-
-                    #if MULTIVOLUME_OVERLAY
-                    src = secondaryColour.a > 0.0 ? secondaryColour : src;
-                    #elif MULTIVOLUME_ISOLATE
-                    src.a = secondaryColour.a > 0.0 ? src.a : 0.0;
-                    #endif
-#endif
-
                     // Calculate gradient (needed for lighting and 2D transfer functions)
 #if defined(TF2D_ON) || defined(LIGHTING_ON)
                     float3 gradient = getGradient(currPos);
@@ -368,11 +343,26 @@
                     float gradMagNorm = gradMag / 1.75f;
 #endif
 
-                    // Apply 2D transfer function
+                    // Apply transfer function (1D or 2D)
+                    float4 src = float4(0,0,0,0);
 #if TF2D_ON
-                    float4 src = getTF2DColour(density, gradMagNorm);
+                    src = getTF2DColour(density, gradMagNorm);
+#else
+                    src = getTF1DColour(density);
+#endif
+
                     if (src.a == 0.0)
                         continue;
+
+#if defined(MULTIVOLUME_OVERLAY) || defined(MULTIVOLUME_ISOLATE)
+                    const float secondaryDensity = getSecondaryDensity(currPos);
+                    float4 secondaryColour = getSecondaryTF1DColour(secondaryDensity);
+                    
+                    #if MULTIVOLUME_OVERLAY
+                    src = secondaryColour.a > 0.0 ? secondaryColour : src;
+                    #elif MULTIVOLUME_ISOLATE
+                    src.a = secondaryColour.a > 0.0 ? src.a : 0.0;
+                    #endif
 #endif
 
                     // Apply lighting

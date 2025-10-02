@@ -18,10 +18,13 @@ namespace UnityVolumeRendering
             grabInteractable.smoothPosition = false;
             grabInteractable.smoothRotation = false;
             
-            // Quick attach settings
+            // Quick attach settings with dynamic attach enabled
+            grabInteractable.useDynamicAttach = true;
             grabInteractable.attachEaseInTime = 0f;
             grabInteractable.matchAttachPosition = true;
             grabInteractable.matchAttachRotation = true;
+            grabInteractable.snapToColliderVolume = false;
+            grabInteractable.reinitializeDynamicAttachEverySingleGrab = true;
         }
     }
-} 
+}
