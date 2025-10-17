@@ -20,8 +20,8 @@ namespace UnityVolumeRendering
             
             // Quick attach settings
             grabInteractable.attachEaseInTime = 0f;
-            grabInteractable.matchAttachPosition = true;
-            grabInteractable.matchAttachRotation = true;
+            grabInteractable.matchAttachPosition = false;
+            grabInteractable.matchAttachRotation = false;
         }
     }
 } 
