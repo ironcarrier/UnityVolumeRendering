@@ -92,16 +92,35 @@ namespace UnityVolumeRendering
             collider.isTrigger = false;
             
             // Size the collider to match the mesh container
-            Renderer meshRenderer = meshContainer.GetComponent<Renderer>();
-            if (meshRenderer != null)
+            MeshFilter meshFilter = meshContainer.GetComponent<MeshFilter>();
+            if (meshFilter != null && meshFilter.sharedMesh != null)
             {
-                collider.center = meshRenderer.bounds.center - outerObject.transform.position;
-                collider.size = meshRenderer.bounds.size;
+                Bounds localBounds = meshFilter.sharedMesh.bounds;
+
+                // Transform local bounds center to outerObject's local space
+                Vector3 worldCenter = meshContainer.transform.TransformPoint(localBounds.center);
+                collider.center = outerObject.transform.InverseTransformPoint(worldCenter);
+
+                // Calculate size considering the meshContainer's scale
+                Vector3 localSize = localBounds.size;
+                Vector3 worldSize = Vector3.Scale(localSize, meshContainer.transform.lossyScale);
+                Vector3 parentScale = outerObject.transform.lossyScale;
+                collider.size = new Vector3(
+                    parentScale.x != 0f ? worldSize.x / parentScale.x : worldSize.x,
+                    parentScale.y != 0f ? worldSize.y / parentScale.y : worldSize.y,
+                    parentScale.z != 0f ? worldSize.z / parentScale.z : worldSize.z);
             }
+
+            // Create an attach point aligned with the mesh container
+            GameObject attachPoint = new GameObject("AttachPoint");
+            attachPoint.transform.SetParent(outerObject.transform, false);
+            attachPoint.transform.localPosition = collider.center;
+            attachPoint.transform.localRotation = meshContainer.transform.localRotation;
+            attachPoint.transform.localScale = Vector3.one;
 
             // Add and configure XR Grab Interactable
             XRGrabInteractable grabInteractable = outerObject.AddComponent<XRGrabInteractable>();
-            VolumeInteractionSettings.SetupInteractable(grabInteractable);
+            VolumeInteractionSettings.SetupInteractable(grabInteractable, attachPoint.transform);
         }
 
         public static void SpawnCrossSectionPlane(VolumeRenderedObject volobj)

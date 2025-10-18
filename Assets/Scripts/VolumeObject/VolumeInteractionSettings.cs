@@ -5,14 +5,14 @@ namespace UnityVolumeRendering
 {
     public static class VolumeInteractionSettings
     {
-        public static void SetupInteractable(XRGrabInteractable grabInteractable)
+        public static void SetupInteractable(XRGrabInteractable grabInteractable, Transform attachTransform = null)
         {
             // Configure for instantaneous movement
             grabInteractable.movementType = XRBaseInteractable.MovementType.Instantaneous;
             grabInteractable.trackPosition = true;
             grabInteractable.trackRotation = true;
             grabInteractable.throwOnDetach = false;
-            grabInteractable.retainTransformParent = false;
+            grabInteractable.retainTransformParent = true;
             
             // Disable smoothing for more stable movement
             grabInteractable.smoothPosition = false;
@@ -20,8 +20,16 @@ namespace UnityVolumeRendering
             
             // Quick attach settings
             grabInteractable.attachEaseInTime = 0f;
-            grabInteractable.matchAttachPosition = false;
-            grabInteractable.matchAttachRotation = false;
+            grabInteractable.matchAttachPosition = true;
+            grabInteractable.matchAttachRotation = true;
+            grabInteractable.useDynamicAttach = true;
+            grabInteractable.reinitializeDynamicAttachEverySingleGrab = true;
+            grabInteractable.snapToColliderVolume = false;
+
+            if (attachTransform != null)
+            {
+                grabInteractable.attachTransform = attachTransform;
+            }
         }
     }
 } 
