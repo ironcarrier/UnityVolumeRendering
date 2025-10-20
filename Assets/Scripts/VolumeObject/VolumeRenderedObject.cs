@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
 
 namespace UnityVolumeRendering
 {
@@ -25,6 +26,9 @@ namespace UnityVolumeRendering
 
         [SerializeField, HideInInspector]
         public GameObject volumeContainerObject;
+
+        [SerializeField, HideInInspector]
+        public Transform attachPoint;
 
         [SerializeField, HideInInspector]
         private RenderMode renderMode;

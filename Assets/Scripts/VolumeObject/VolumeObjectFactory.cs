@@ -77,31 +77,27 @@ namespace UnityVolumeRendering
             if (PlayerPrefs.GetInt("NormaliseScaleOnImport") > 0)
                 volObj.NormaliseScale();
 
-            SetupXRInteraction(outerObject, meshContainer);
+            SetupXRInteraction(outerObject, meshContainer, volObj);
         }
 
-        private static void SetupXRInteraction(GameObject outerObject, GameObject meshContainer)
+        private static void SetupXRInteraction(GameObject outerObject, GameObject meshContainer, VolumeRenderedObject volObj)
         {
-            // Add rigidbody for physics interaction
             Rigidbody rb = outerObject.AddComponent<Rigidbody>();
             rb.isKinematic = true;
             rb.useGravity = false;
 
-            // Add box collider to the outer object
             BoxCollider collider = outerObject.AddComponent<BoxCollider>();
             collider.isTrigger = false;
             
-            // Size the collider to match the mesh container
+            Vector3 colliderCenter = Vector3.zero;
             MeshFilter meshFilter = meshContainer.GetComponent<MeshFilter>();
             if (meshFilter != null && meshFilter.sharedMesh != null)
             {
                 Bounds localBounds = meshFilter.sharedMesh.bounds;
-
-                // Transform local bounds center to outerObject's local space
                 Vector3 worldCenter = meshContainer.transform.TransformPoint(localBounds.center);
-                collider.center = outerObject.transform.InverseTransformPoint(worldCenter);
+                colliderCenter = outerObject.transform.InverseTransformPoint(worldCenter);
+                collider.center = colliderCenter;
 
-                // Calculate size considering the meshContainer's scale
                 Vector3 localSize = localBounds.size;
                 Vector3 worldSize = Vector3.Scale(localSize, meshContainer.transform.lossyScale);
                 Vector3 parentScale = outerObject.transform.lossyScale;
@@ -110,17 +106,30 @@ namespace UnityVolumeRendering
                     parentScale.y != 0f ? worldSize.y / parentScale.y : worldSize.y,
                     parentScale.z != 0f ? worldSize.z / parentScale.z : worldSize.z);
             }
+            else
+            {
+                Renderer renderer = meshContainer.GetComponent<Renderer>();
+                if (renderer != null)
+                {
+                    Vector3 worldCenter = renderer.bounds.center;
+                    colliderCenter = outerObject.transform.InverseTransformPoint(worldCenter);
+                    collider.center = colliderCenter;
+                    collider.size = renderer.bounds.size;
+                }
+            }
 
-            // Create an attach point aligned with the mesh container
             GameObject attachPoint = new GameObject("AttachPoint");
             attachPoint.transform.SetParent(outerObject.transform, false);
-            attachPoint.transform.localPosition = collider.center;
+            attachPoint.transform.localPosition = colliderCenter;
             attachPoint.transform.localRotation = meshContainer.transform.localRotation;
             attachPoint.transform.localScale = Vector3.one;
+            volObj.attachPoint = attachPoint.transform;
 
-            // Add and configure XR Grab Interactable
             XRGrabInteractable grabInteractable = outerObject.AddComponent<XRGrabInteractable>();
-            VolumeInteractionSettings.SetupInteractable(grabInteractable, attachPoint.transform);
+            VolumeInteractionSettings.SetupInteractable(grabInteractable);
+
+            VolumeGrabPivotController pivotController = outerObject.AddComponent<VolumeGrabPivotController>();
+            pivotController.Initialise(grabInteractable, volObj);
         }
 
         public static void SpawnCrossSectionPlane(VolumeRenderedObject volobj)
