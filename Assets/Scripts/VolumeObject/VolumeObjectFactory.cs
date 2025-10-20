@@ -135,7 +135,6 @@ namespace UnityVolumeRendering
         public static void SpawnCrossSectionPlane(VolumeRenderedObject volobj)
         {
             GameObject quad = GameObject.Instantiate((GameObject)Resources.Load("CrossSectionPlane"));
-            quad.transform.rotation = Quaternion.Euler(270.0f, 0.0f, 0.0f);
             CrossSectionPlane csplane = quad.gameObject.GetComponent<CrossSectionPlane>();
             csplane.SetTargetObject(volobj);
             quad.transform.position = volobj.transform.position;
